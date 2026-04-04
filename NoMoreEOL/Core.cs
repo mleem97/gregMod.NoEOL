@@ -29,7 +29,8 @@ using NoMoreEOL.Enums;
 using DataCenterModLoader;
 using NoMoreEOL.Options;
 
-[assembly: MelonInfo(typeof(NoMoreEOL.Core), "NoMoreEOL", "1.0.0", "Neox", null)]
+[assembly: MelonInfo(typeof(NoMoreEOL.Core), "NoMoreEOL", "1.0.0", "Neox", "https://github.com/MartelSimon/NoMoreEOL")]
+[assembly: MelonAdditionalDependencies("DataCenterModLoader")]
 [assembly: MelonGame("Waseku", "Data Center")]
 
 namespace NoMoreEOL
