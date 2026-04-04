@@ -4,7 +4,7 @@
 
 It prevents servers and switches from reaching end-of-life and can automatically repair broken devices, keeping your network running without constant micromanagement.
 
-The mod integrates with the in-game modular menu system via DataCenter-RustBridge for easy configuration.
+The mod integrates with the in-game modular menu system via [DataCenter-RustBridge](https://github.com/Joniii11/DataCenter-RustBridge) for easy configuration.
 
 ---
 
@@ -24,14 +24,14 @@ The mod integrates with the in-game modular menu system via DataCenter-RustBridg
 Before installing, make sure you have:
 
 - **MelonLoader (latest version)**
-- **DataCenter-RustBridge**
+- **[DataCenter-RustBridge](https://github.com/Joniii11/DataCenter-RustBridge)**
 
 ---
 
 ## 📥 Installation
 
 1. Install **MelonLoader** into *Data Center*
-2. Install **DataCenter-RustBridge**
+2. Install **[DataCenter-RustBridge](https://github.com/Joniii11/DataCenter-RustBridge)**
 3. Download the latest release of **NoMoreEOL**
 4. Place `NoMoreEOL.dll` into your `Mods` folder:
 
