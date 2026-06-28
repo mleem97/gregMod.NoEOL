@@ -41,6 +41,7 @@ internal static class NoEolOverlay
     private static MelonPreferences_Entry<bool> _prefDisableServerEol;
     private static MelonPreferences_Entry<bool> _prefAutoRepairSwitches;
     private static MelonPreferences_Entry<bool> _prefAutoRepairServers;
+    private static MelonPreferences_Entry<bool> _prefHideWarningTriangles;
 
     private static readonly Color ColBackdrop = new(10f / 255f, 12f / 255f, 16f / 255f, 1f);
     private static readonly Color ColSidebar = new(24f / 255f, 30f / 255f, 40f / 255f, 1f);
@@ -60,7 +61,7 @@ internal static class NoEolOverlay
     private static readonly Color ColTealAccent = new(80f / 255f, 220f / 255f, 210f / 255f, 1f);
 
     private const float WindowW = 420f;
-    private const float WindowH = 380f;
+    private const float WindowH = 450f;
 
     public static bool IsVisible
     {
@@ -88,12 +89,14 @@ internal static class NoEolOverlay
         MelonPreferences_Entry<bool> disableSwitchEol,
         MelonPreferences_Entry<bool> disableServerEol,
         MelonPreferences_Entry<bool> autoRepairSwitches,
-        MelonPreferences_Entry<bool> autoRepairServers)
+        MelonPreferences_Entry<bool> autoRepairServers,
+        MelonPreferences_Entry<bool> hideWarningTriangles)
     {
         _prefDisableSwitchEol = disableSwitchEol;
         _prefDisableServerEol = disableServerEol;
         _prefAutoRepairSwitches = autoRepairSwitches;
         _prefAutoRepairServers = autoRepairServers;
+        _prefHideWarningTriangles = hideWarningTriangles;
     }
 
     public static void Draw()
@@ -161,6 +164,12 @@ internal static class NoEolOverlay
             "Automatically repairs all broken servers every frame.",
             _prefAutoRepairServers);
 
+        contentY = DrawToggleCard(pad, contentY, contentW,
+            "Hide EOL Warning Triangles",
+            "Hides the orange warning triangles on devices reaching end-of-life. (by tindolt)",
+            _prefHideWarningTriangles,
+            visible => EolHider.ApplyVisibility(visible));
+
         contentY += 8f;
 
         var btnW = 120f;
@@ -171,7 +180,7 @@ internal static class NoEolOverlay
         GUI.DragWindow(new Rect(0, 0, r.width, titleBarH));
     }
 
-    private static float DrawToggleCard(float x, float y, float w, string title, string description, MelonPreferences_Entry<bool> pref)
+    private static float DrawToggleCard(float x, float y, float w, string title, string description, MelonPreferences_Entry<bool> pref, System.Action<bool> onChanged = null)
     {
         var cardH = 62f;
         var cardRect = new Rect(x, y, w, cardH);
@@ -190,6 +199,7 @@ internal static class NoEolOverlay
             pref.Value = !pref.Value;
             MelonPreferences.Save();
             ModReleaseLog.ConfigEvent($"{pref.DisplayName} = {pref.Value}");
+            onChanged?.Invoke(pref.Value);
         }
 
         var textX = x + 14;

@@ -5,7 +5,7 @@ using MelonLoader;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.6.5", "TeamGreg Modding (Neox & mleem97)")]
+[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.7.0", "TeamGreg Modding (Neox & mleem97)")]
 [assembly: MelonGame()]
 
 namespace GregModNoEOL;
@@ -21,6 +21,7 @@ public class GregModNoEOLMod : MelonMod
     private static MelonPreferences_Entry<bool> _prefDisableServerEol;
     private static MelonPreferences_Entry<bool> _prefAutoRepairSwitches;
     private static MelonPreferences_Entry<bool> _prefAutoRepairServers;
+    private static MelonPreferences_Entry<bool> _prefHideWarningTriangles;
 
     private readonly System.Collections.Generic.Dictionary<int, int> _switchTypeDefaultEol = new();
     private readonly System.Collections.Generic.Dictionary<int, int> _serverTypeDefaultEol = new();
@@ -38,16 +39,19 @@ public class GregModNoEOLMod : MelonMod
         _prefDisableServerEol = _prefs.CreateEntry("DisableServersEOL", true, "Disable Servers EOL");
         _prefAutoRepairSwitches = _prefs.CreateEntry("AutoRepairSwitches", true, "Auto Repair Broken Switches");
         _prefAutoRepairServers = _prefs.CreateEntry("AutoRepairServers", true, "Auto Repair Broken Servers");
+        _prefHideWarningTriangles = _prefs.CreateEntry("HideWarningTriangles", false, "Hide EOL Warning Triangles");
 
-        NoEolOverlay.Init(_prefDisableSwitchEol, _prefDisableServerEol, _prefAutoRepairSwitches, _prefAutoRepairServers);
+        NoEolOverlay.Init(_prefDisableSwitchEol, _prefDisableServerEol, _prefAutoRepairSwitches, _prefAutoRepairServers, _prefHideWarningTriangles);
+        EolHider.Init(_prefHideWarningTriangles);
 
         ModReleaseLog.ConfigEvent($"DisableSwitchesEOL = {_prefDisableSwitchEol.Value}");
         ModReleaseLog.ConfigEvent($"DisableServersEOL = {_prefDisableServerEol.Value}");
         ModReleaseLog.ConfigEvent($"AutoRepairSwitches = {_prefAutoRepairSwitches.Value}");
         ModReleaseLog.ConfigEvent($"AutoRepairServers = {_prefAutoRepairServers.Value}");
+        ModReleaseLog.ConfigEvent($"HideWarningTriangles = {_prefHideWarningTriangles.Value}");
 
-        LoggerInstance.Msg("gregMod.NoEOL v1.6.5 loaded. Press F5 for configuration.");
-        ModReleaseLog.Info("gregMod.NoEOL v1.6.5 initialized successfully");
+        LoggerInstance.Msg("gregMod.NoEOL v1.7.0 loaded. Press F5 for configuration.");
+        ModReleaseLog.Info("gregMod.NoEOL v1.7.0 initialized successfully");
         ModReleaseLog.Info($"Release log: {ModReleaseLog.LogPath}");
     }
 
@@ -115,6 +119,8 @@ public class GregModNoEOLMod : MelonMod
             _serverTypeDefaultEol.Clear();
             ModReleaseLog.SceneEvent("Main menu — EOL management paused");
         }
+
+        EolHider.OnSceneLoaded();
     }
 
     private void HandleInput()

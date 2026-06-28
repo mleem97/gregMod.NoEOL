@@ -5,7 +5,7 @@
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/greg)
 [![gregFramework](https://img.shields.io/badge/gregFramework-Website-blue?style=for-the-badge)](https://gregframework.eu)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green?style=for-the-badge)](./LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.6.5-orange?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version-1.7.0-orange?style=for-the-badge)]()
 [![GameVersion](https://img.shields.io/badge/Game%20Version-1.0.50.15-yellow?style=for-the-badge)]()
 [![Unity](https://img.shields.io/badge/Unity-6000.5-black?style=for-the-badge&logo=unity&logoColor=white)]()
 
@@ -25,6 +25,7 @@
 - Disable server end-of-life (restores default EOL value every frame)
 - Auto-repair broken switches
 - Auto-repair broken servers
+- Hide EOL warning triangles on devices
 - Real-time behavior — applies continuously during gameplay
 - **F5 configuration overlay** (IPAM-style dark UI)
 - Configurable via MelonPreferences (F5 menu)
@@ -53,6 +54,7 @@ All settings are available in-game via MelonPreferences (F5 menu).
 | `DisableServersEOL` | `true` | Prevents servers from reaching end-of-life |
 | `AutoRepairBrokenSwitches` | `true` | Automatically repairs broken switches |
 | `AutoRepairBrokenServers` | `true` | Automatically repairs broken servers |
+| `HideWarningTriangles` | `false` | Hides EOL warning triangles on devices |
 
 ## How It Works
 
@@ -97,6 +99,7 @@ gregMod.NoEOL/
 ├── NoMoreEOL/                  # Source code
 │   ├── Core.cs                 # MelonLoader entry point, EOL handling, device repair
 │   ├── NoEolOverlay.cs         # F5 configuration overlay (IPAM-style UI)
+│   ├── EolHider.cs             # EOL warning triangle hiding (Harmony patch)
 │   ├── ModReleaseLog.cs        # Verbose release logging
 │   └── Enums/
 │       └── EOLDeviceType.cs    # Device type enum
@@ -112,6 +115,7 @@ gregMod.NoEOL/
 |------|-------------|
 | **Original Author** | [Neox](https://github.com/MartelSimon) (TeamGreg Modding) |
 | **gregMod Fork** | [mleem97](https://github.com/mleem97) ([TeamGreg Modding](https://github.com/teamGregModding)) |
+| **EOL Hider** | [tindolt](https://github.com/tindolt) |
 
 ## License
 
