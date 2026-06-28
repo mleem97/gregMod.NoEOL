@@ -1,106 +1,110 @@
-# NoMoreEOL
+# gregMod.NoEOL
 
-**NoMoreEOL** is a quality-of-life mod for *Data Center* that removes repetitive infrastructure maintenance.
+> Removes end-of-life expiration and auto-repairs broken devices in **Data Center** — quality-of-life automation for your network.
 
-It prevents servers and switches from reaching end-of-life and can automatically repair broken devices, keeping your network running without constant micromanagement.
+[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/greg)
+[![gregFramework](https://img.shields.io/badge/gregFramework-Website-blue?style=for-the-badge)](https://gregframework.eu)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green?style=for-the-badge)](./LICENSE)
+[![Version](https://img.shields.io/badge/Version-1.0.0-orange?style=for-the-badge)](./NoMoreEOL/Core.cs)
+[![GameVersion](https://img.shields.io/badge/Game%20Version-1.0.50.15-yellow?style=for-the-badge)]()
+[![Unity](https://img.shields.io/badge/Unity-6000.5-black?style=for-the-badge&logo=unity&logoColor=white)]()
 
-The mod integrates with the in-game modular menu system via [DataCenter-RustBridge](https://github.com/Joniii11/DataCenter-RustBridge) for easy configuration.
+## Links
 
----
+- **Repository:** [github.com/mleem97/gregMod.NoEOL](https://github.com/mleem97/gregMod.NoEOL)
+- **Discord / Support:** [discord.gg/greg](https://discord.gg/greg)
+- **Website:** [gregframework.eu](https://gregframework.eu)
 
-## ✨ Features
+## Overview
 
-- Disable switch end-of-life
-- Disable server end-of-life
-- Automatically repair broken switches
-- Automatically repair broken servers
-- Real-time behavior (applies continuously during gameplay)
-- In-game configuration menu
+**gregMod.NoEOL** prevents servers and switches from reaching end-of-life and automatically repairs broken devices. It keeps your network running without constant micromanagement.
 
----
+## Features
 
-## 📦 Requirements
+- Disable switch end-of-life (restores default EOL value every frame)
+- Disable server end-of-life (restores default EOL value every frame)
+- Auto-repair broken switches
+- Auto-repair broken servers
+- Real-time behavior — applies continuously during gameplay
+- Configurable via MelonPreferences (F5 menu)
+- Safe scene reset when returning to main menu
 
-Before installing, make sure you have:
+## Installation
 
-- **MelonLoader (latest version)**
-- **[DataCenter-RustBridge](https://github.com/Joniii11/DataCenter-RustBridge)**
+1. Install **MelonLoader** (v0.6+) for **Data Center**
+2. Copy the release DLL into the mod folder:
 
----
+   ```text
+   Game/Mods/gregMod.NoEOL.dll
+   ```
 
-## 📥 Installation
+3. Start the game
+4. Configure via **F5** → **Mods** → **gregMod.NoEOL**
 
-1. Install **MelonLoader** into *Data Center*
-2. Install **[DataCenter-RustBridge](https://github.com/Joniii11/DataCenter-RustBridge)**
-3. Download the latest release of **NoMoreEOL**
-4. Place `NoMoreEOL.dll` into your `Mods` folder:
+## Configuration
 
+All settings are available in-game via MelonPreferences (F5 menu).
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `DisableSwitchesEOL` | `true` | Prevents switches from reaching end-of-life |
+| `DisableServersEOL` | `true` | Prevents servers from reaching end-of-life |
+| `AutoRepairBrokenSwitches` | `true` | Automatically repairs broken switches |
+| `AutoRepairBrokenServers` | `true` | Automatically repairs broken servers |
+
+## How It Works
+
+1. On scene load, the mod caches `NetworkMap` and `MainGameManager` singletons
+2. Each frame in `OnUpdate()`:
+   - Repairs broken switches/servers (if enabled)
+   - Restores default EOL values (if enabled)
+3. On main menu load, scene references are cleared
+4. EOL values are resolved from device prefabs and cached by type
+
+## Dependencies
+
+- **MelonLoader** (v0.6+)
+- **Il2CppInterop**
+- Unity / game interop assemblies from the local Data Center installation
+
+## Build from Source
+
+Requirements:
+
+- .NET 6 SDK
+- local Data Center / MelonLoader installation
+
+Build:
+
+```bash
+git clone https://github.com/mleem97/gregMod.NoEOL.git
+cd gregMod.NoEOL
+dotnet build -c Release
 ```
-GameFolder/
-└── Mods/
-    └── NoMoreEOL.dll
+
+Release output:
+
+```text
+NoMoreEOL/bin/Release/net6.0/gregMod.NoEOL.dll
 ```
 
-5. Launch the game
+## Project Structure
+
+- **`NoMoreEOL/Core.cs`** — MelonLoader entry point, EOL handling, device repair
+- **`NoMoreEOL/Enums/`** — EOLDeviceType, OptionType
+- **`NoMoreEOL/NoMoreEOL.csproj`** — Project file
+
+## Credits
+
+| Role | Contributor |
+|------|-------------|
+| **Original Author** | [Neox](https://github.com/MartelSimon) (TeamGreg Modding) |
+| **gregMod Fork** | [mleem97](https://github.com/mleem97) ([TeamGreg Modding](https://github.com/teamGregModding)) |
+
+## License
+
+This project is licensed under the **Apache License 2.0**. See [`LICENSE`](./LICENSE).
 
 ---
 
-## ⚙️ Configuration
-
-All settings are available in-game through the modular menu (RustBridge).
-
-### Available Options
-
-- **DisableSwitchesEOL** *(default: true)*  
-  Prevents switches from reaching end-of-life.
-
-- **DisableServersEOL** *(default: true)*  
-  Prevents servers from reaching end-of-life.
-
-- **AutoRepairBrokenSwitches** *(default: true)*  
-  Automatically repairs switches after they break.
-
-- **AutoRepairBrokenServers** *(default: true)*  
-  Automatically repairs servers after they break.
-
----
-
-## 🧠 How It Works
-
-- The mod activates when entering the main gameplay scene
-- It monitors servers and switches continuously
-- It restores original EOL values to prevent expiration
-- It automatically repairs broken devices when enabled
-- It resets safely when returning to the main menu
-
----
-
-## 🎯 Scope
-
-This is a **quality-of-life automation mod**.
-
-It does **not**:
-- Add new content
-- Change game balance
-- Modify UI beyond the config menu
-
----
-
-## ⚠️ Notes
-
-- This mod is designed for convenience and reduced micromanagement
-- It may reduce intended maintenance gameplay mechanics
-
----
-
-## 🛠️ Development
-
-- Mod Loader: MelonLoader
-- Framework: .NET 6
-- Language: C#
-
----
-
-## 📜 License
-
-MIT License © 2026 Neox
+**gregFramework — powered by the community.**
