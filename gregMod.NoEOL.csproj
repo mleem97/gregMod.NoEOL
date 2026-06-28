@@ -2,63 +2,22 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>latest</LangVersion>
     <AssemblyName>gregMod.NoEOL</AssemblyName>
     <RootNamespace>GregModNoEOL</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DefaultItemExcludes>$(DefaultItemExcludes);artifacts\**;exports\**</DefaultItemExcludes>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <DataCenterGameDir Condition="'$(DataCenterGameDir)' == ''">/mnt/win/SteamLibrary/steamapps/common/Data Center</DataCenterGameDir>
-    <MelonLoaderNetDir>$(DataCenterGameDir)/MelonLoader/net6</MelonLoaderNetDir>
-    <MelonIl2CppAssembliesDir>$(DataCenterGameDir)/MelonLoader/Il2CppAssemblies</MelonIl2CppAssembliesDir>
-    <MelonIl2CppInteropDir>$(DataCenterGameDir)/MelonLoader/Dependencies/SupportModules/Il2Cpp</MelonIl2CppInteropDir>
-    <BepInExInteropDir>$(DataCenterGameDir)/BepInEx/interop</BepInExInteropDir>
-    <GameInteropDir>$(MelonIl2CppAssembliesDir)</GameInteropDir>
+    <NoWarn>CS1701;CS1702</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>$(MelonLoaderNetDir)/0Harmony.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>$(GameInteropDir)/Assembly-CSharp.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Il2CppInterop.Runtime">
-      <HintPath>$(MelonLoaderNetDir)/Il2CppInterop.Runtime.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="MelonLoader">
-      <HintPath>$(MelonLoaderNetDir)/MelonLoader.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>$(GameInteropDir)/UnityEngine.CoreModule.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Il2Cppmscorlib">
-      <HintPath>$(GameInteropDir)/Il2Cppmscorlib.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Il2CppSystem">
-      <HintPath>$(GameInteropDir)/Il2CppSystem.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Il2CppSystem.Core">
-      <HintPath>$(GameInteropDir)/Il2CppSystem.Core.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup Condition="Exists('$(MelonIl2CppInteropDir)/Il2CppInterop.Runtime.dll')">
-    <Reference Update="Il2CppInterop.Runtime">
-      <HintPath>$(MelonIl2CppInteropDir)/Il2CppInterop.Runtime.dll</HintPath>
-    </Reference>
+    <Reference Include="MelonLoader"><HintPath>references/MelonLoader.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>references/0Harmony.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Il2CppInterop.Runtime"><HintPath>references/Il2CppInterop.Runtime.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Il2Cppmscorlib"><HintPath>references/Il2Cppmscorlib.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Assembly-CSharp"><HintPath>references/Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>references/UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
   </ItemGroup>
 </Project>
