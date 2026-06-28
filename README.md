@@ -5,7 +5,7 @@
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/greg)
 [![gregFramework](https://img.shields.io/badge/gregFramework-Website-blue?style=for-the-badge)](https://gregframework.eu)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green?style=for-the-badge)](./LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.6.1-orange?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version-1.6.5-orange?style=for-the-badge)]()
 [![GameVersion](https://img.shields.io/badge/Game%20Version-1.0.50.15-yellow?style=for-the-badge)]()
 [![Unity](https://img.shields.io/badge/Unity-6000.5-black?style=for-the-badge&logo=unity&logoColor=white)]()
 
@@ -26,6 +26,7 @@
 - Auto-repair broken switches
 - Auto-repair broken servers
 - Real-time behavior — applies continuously during gameplay
+- **F5 configuration overlay** (IPAM-style dark UI)
 - Configurable via MelonPreferences (F5 menu)
 - Safe scene reset when returning to main menu
 - Verbose release log (`noeol.latest.log`)
@@ -40,7 +41,7 @@
    ```
 
 3. Start the game
-4. Configure via **F5** → **Mods** → **gregMod.NoEOL**
+4. Press **F5** to open the configuration overlay
 
 ## Configuration
 
@@ -95,6 +96,7 @@ bin/Release/net6.0/gregMod.NoEOL.dll
 gregMod.NoEOL/
 ├── NoMoreEOL/                  # Source code
 │   ├── Core.cs                 # MelonLoader entry point, EOL handling, device repair
+│   ├── NoEolOverlay.cs         # F5 configuration overlay (IPAM-style UI)
 │   ├── ModReleaseLog.cs        # Verbose release logging
 │   └── Enums/
 │       └── EOLDeviceType.cs    # Device type enum

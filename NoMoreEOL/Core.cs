@@ -3,16 +3,13 @@ using System.Collections;
 using Il2Cpp;
 using MelonLoader;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.6.1", "TeamGreg Modding (Neox & mleem97)")]
+[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.6.5", "TeamGreg Modding (Neox & mleem97)")]
 [assembly: MelonGame()]
 
 namespace GregModNoEOL;
 
-/// <summary>
-/// Prevents servers and switches from reaching end-of-life and auto-repairs broken devices.
-/// Uses MelonPreferences for configuration (F5 menu).
-/// </summary>
 public class GregModNoEOLMod : MelonMod
 {
     private const int DefaultEOL = 14401;
@@ -42,18 +39,22 @@ public class GregModNoEOLMod : MelonMod
         _prefAutoRepairSwitches = _prefs.CreateEntry("AutoRepairSwitches", true, "Auto Repair Broken Switches");
         _prefAutoRepairServers = _prefs.CreateEntry("AutoRepairServers", true, "Auto Repair Broken Servers");
 
+        NoEolOverlay.Init(_prefDisableSwitchEol, _prefDisableServerEol, _prefAutoRepairSwitches, _prefAutoRepairServers);
+
         ModReleaseLog.ConfigEvent($"DisableSwitchesEOL = {_prefDisableSwitchEol.Value}");
         ModReleaseLog.ConfigEvent($"DisableServersEOL = {_prefDisableServerEol.Value}");
         ModReleaseLog.ConfigEvent($"AutoRepairSwitches = {_prefAutoRepairSwitches.Value}");
         ModReleaseLog.ConfigEvent($"AutoRepairServers = {_prefAutoRepairServers.Value}");
 
-        LoggerInstance.Msg("gregMod.NoEOL v1.6.1 loaded. Config via F5 → Mods → gregMod.NoEOL.");
-        ModReleaseLog.Info("gregMod.NoEOL v1.6.0 initialized successfully");
+        LoggerInstance.Msg("gregMod.NoEOL v1.6.5 loaded. Press F5 for configuration.");
+        ModReleaseLog.Info("gregMod.NoEOL v1.6.5 initialized successfully");
         ModReleaseLog.Info($"Release log: {ModReleaseLog.LogPath}");
     }
 
     public override void OnUpdate()
     {
+        HandleInput();
+
         if (_readyToRun)
         {
             _frameCount++;
@@ -97,6 +98,11 @@ public class GregModNoEOLMod : MelonMod
         }
     }
 
+    public override void OnGUI()
+    {
+        NoEolOverlay.Draw();
+    }
+
     public override void OnSceneWasLoaded(int buildIndex, string sceneName)
     {
         ModReleaseLog.SceneEvent($"Scene loaded: {sceneName} (buildIndex={buildIndex})");
@@ -108,6 +114,21 @@ public class GregModNoEOLMod : MelonMod
             _switchTypeDefaultEol.Clear();
             _serverTypeDefaultEol.Clear();
             ModReleaseLog.SceneEvent("Main menu — EOL management paused");
+        }
+    }
+
+    private void HandleInput()
+    {
+        var kb = Keyboard.current;
+        if (kb == null) return;
+
+        if (kb.f5Key.wasPressedThisFrame)
+        {
+            NoEolOverlay.IsVisible = !NoEolOverlay.IsVisible;
+            if (NoEolOverlay.IsVisible)
+                ModReleaseLog.ConfigEvent("Overlay opened");
+            else
+                ModReleaseLog.ConfigEvent("Overlay closed");
         }
     }
 
