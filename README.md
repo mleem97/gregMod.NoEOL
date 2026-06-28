@@ -5,7 +5,7 @@
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/greg)
 [![gregFramework](https://img.shields.io/badge/gregFramework-Website-blue?style=for-the-badge)](https://gregframework.eu)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green?style=for-the-badge)](./LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.0.0-orange?style=for-the-badge)](./NoMoreEOL/Core.cs)
+[![Version](https://img.shields.io/badge/Version-1.6.1-orange?style=for-the-badge)]()
 [![GameVersion](https://img.shields.io/badge/Game%20Version-1.0.50.15-yellow?style=for-the-badge)]()
 [![Unity](https://img.shields.io/badge/Unity-6000.5-black?style=for-the-badge&logo=unity&logoColor=white)]()
 
@@ -28,6 +28,7 @@
 - Real-time behavior — applies continuously during gameplay
 - Configurable via MelonPreferences (F5 menu)
 - Safe scene reset when returning to main menu
+- Verbose release log (`noeol.latest.log`)
 
 ## Installation
 
@@ -85,14 +86,23 @@ dotnet build -c Release
 Release output:
 
 ```text
-NoMoreEOL/bin/Release/net6.0/gregMod.NoEOL.dll
+bin/Release/net6.0/gregMod.NoEOL.dll
 ```
 
 ## Project Structure
 
-- **`NoMoreEOL/Core.cs`** — MelonLoader entry point, EOL handling, device repair
-- **`NoMoreEOL/Enums/`** — EOLDeviceType, OptionType
-- **`NoMoreEOL/NoMoreEOL.csproj`** — Project file
+```
+gregMod.NoEOL/
+├── NoMoreEOL/                  # Source code
+│   ├── Core.cs                 # MelonLoader entry point, EOL handling, device repair
+│   ├── ModReleaseLog.cs        # Verbose release logging
+│   └── Enums/
+│       └── EOLDeviceType.cs    # Device type enum
+├── references/                 # Game & MelonLoader interop DLLs
+├── gregMod.NoEOL.csproj        # Project file
+├── LICENSE                     # Apache 2.0
+└── README.md
+```
 
 ## Credits
 

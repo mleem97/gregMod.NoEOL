@@ -1,5 +1,16 @@
-bin/
-obj/
+# Build outputs
+[Bb]in/
+[Oo]bj/
+
+# IDE
+.vs/
 *.user
 *.suo
-.vs/
+*.csproj.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# NuGet
+*.nupkg

@@ -4,7 +4,7 @@ using Il2Cpp;
 using MelonLoader;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.6.0", "TeamGreg Modding (Neox & mleem97)")]
+[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.6.1", "TeamGreg Modding (Neox & mleem97)")]
 [assembly: MelonGame()]
 
 namespace GregModNoEOL;
@@ -47,7 +47,7 @@ public class GregModNoEOLMod : MelonMod
         ModReleaseLog.ConfigEvent($"AutoRepairSwitches = {_prefAutoRepairSwitches.Value}");
         ModReleaseLog.ConfigEvent($"AutoRepairServers = {_prefAutoRepairServers.Value}");
 
-        LoggerInstance.Msg("gregMod.NoEOL v1.6.0 loaded. Config via F5 → Mods → gregMod.NoEOL.");
+        LoggerInstance.Msg("gregMod.NoEOL v1.6.1 loaded. Config via F5 → Mods → gregMod.NoEOL.");
         ModReleaseLog.Info("gregMod.NoEOL v1.6.0 initialized successfully");
         ModReleaseLog.Info($"Release log: {ModReleaseLog.LogPath}");
     }
