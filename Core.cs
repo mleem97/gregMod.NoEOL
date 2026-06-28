@@ -4,7 +4,7 @@ using Il2Cpp;
 using MelonLoader;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.0.0", "TeamGreg Modding (Neox & mleem97)")]
+[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.5.2", "TeamGreg Modding (Neox & mleem97)")]
 [assembly: MelonGame()]
 
 namespace GregModNoEOL;
@@ -30,26 +30,47 @@ public class GregModNoEOLMod : MelonMod
     private bool _readyToRun;
     private NetworkMap _networkMap;
     private MainGameManager _gameManager;
+    private int _frameCount;
 
     public override void OnInitializeMelon()
     {
+        ModReleaseLog.Bootstrap();
+
         _prefs = MelonPreferences.CreateCategory("gregMod_NoEOL", "gregMod.NoEOL");
         _prefDisableSwitchEol = _prefs.CreateEntry("DisableSwitchesEOL", true, "Disable Switches EOL");
         _prefDisableServerEol = _prefs.CreateEntry("DisableServersEOL", true, "Disable Servers EOL");
         _prefAutoRepairSwitches = _prefs.CreateEntry("AutoRepairSwitches", true, "Auto Repair Broken Switches");
         _prefAutoRepairServers = _prefs.CreateEntry("AutoRepairServers", true, "Auto Repair Broken Servers");
 
-        LoggerInstance.Msg("gregMod.NoEOL v1.0.0 loaded. Config via F5 → Mods → gregMod.NoEOL.");
+        ModReleaseLog.ConfigEvent($"DisableSwitchesEOL = {_prefDisableSwitchEol.Value}");
+        ModReleaseLog.ConfigEvent($"DisableServersEOL = {_prefDisableServerEol.Value}");
+        ModReleaseLog.ConfigEvent($"AutoRepairSwitches = {_prefAutoRepairSwitches.Value}");
+        ModReleaseLog.ConfigEvent($"AutoRepairServers = {_prefAutoRepairServers.Value}");
+
+        LoggerInstance.Msg("gregMod.NoEOL v1.5.2 loaded. Config via F5 → Mods → gregMod.NoEOL.");
+        ModReleaseLog.Info("gregMod.NoEOL v1.5.2 initialized successfully");
+        ModReleaseLog.Info($"Release log: {ModReleaseLog.LogPath}");
     }
 
     public override void OnUpdate()
     {
         if (_readyToRun)
         {
-            if (_prefAutoRepairSwitches.Value) RepairSwitches();
-            if (_prefAutoRepairServers.Value) RepairServers();
-            if (_prefDisableSwitchEol.Value) HandleSwitchesEol();
-            if (_prefDisableServerEol.Value) HandleServersEol();
+            _frameCount++;
+            var repairedSw = 0;
+            var repairedSrv = 0;
+            var resetSw = 0;
+            var resetSrv = 0;
+
+            if (_prefAutoRepairSwitches.Value) repairedSw = RepairSwitches();
+            if (_prefAutoRepairServers.Value) repairedSrv = RepairServers();
+            if (_prefDisableSwitchEol.Value) resetSw = HandleSwitchesEol();
+            if (_prefDisableServerEol.Value) resetSrv = HandleServersEol();
+
+            if (repairedSw > 0) ModReleaseLog.RepairEvent($"Repaired {repairedSw} broken switch(es)");
+            if (repairedSrv > 0) ModReleaseLog.RepairEvent($"Repaired {repairedSrv} broken server(s)");
+            if (resetSw > 0 && _frameCount % 300 == 0) ModReleaseLog.EolEvent($"EOL reset applied to {resetSw} switch(es)");
+            if (resetSrv > 0 && _frameCount % 300 == 0) ModReleaseLog.EolEvent($"EOL reset applied to {resetSrv} server(s)");
             return;
         }
 
@@ -65,16 +86,20 @@ public class GregModNoEOLMod : MelonMod
             _readyToRun = true;
             _networkMap = networkMap;
             _gameManager = gameManager;
+            _frameCount = 0;
             LoggerInstance.Msg("gregMod.NoEOL: scene ready, EOL management active.");
+            ModReleaseLog.SceneEvent("Gameplay scene ready — EOL management active");
         }
         catch (Exception ex)
         {
             LoggerInstance.Warning($"gregMod.NoEOL: init failed: {ex.Message}");
+            ModReleaseLog.Error("Scene init failed", ex);
         }
     }
 
     public override void OnSceneWasLoaded(int buildIndex, string sceneName)
     {
+        ModReleaseLog.SceneEvent($"Scene loaded: {sceneName} (buildIndex={buildIndex})");
         if (buildIndex == MainMenuSceneBuildIndex)
         {
             _readyToRun = false;
@@ -82,6 +107,7 @@ public class GregModNoEOLMod : MelonMod
             _networkMap = null;
             _switchTypeDefaultEol.Clear();
             _serverTypeDefaultEol.Clear();
+            ModReleaseLog.SceneEvent("Main menu — EOL management paused");
         }
     }
 
@@ -115,67 +141,63 @@ public class GregModNoEOLMod : MelonMod
                 return eol;
             }
         }
-        catch
-        {
-            return DefaultEOL;
-        }
+        catch { return DefaultEOL; }
     }
 
-    private void RepairSwitches()
+    private int RepairSwitches()
     {
-        if (!_readyToRun) return;
+        if (!_readyToRun) return 0;
+        var count = 0;
         try
         {
             var broken = _networkMap.GetAllBrokenSwitches() as IEnumerable;
-            if (broken == null) return;
+            if (broken == null) return 0;
             var en = broken.GetEnumerator();
             try
             {
                 while (en.MoveNext())
                 {
                     var sw = en.Current as NetworkSwitch;
-                    if (sw != null) sw.RepairDevice();
+                    if (sw != null) { sw.RepairDevice(); count++; }
                 }
             }
-            finally
-            {
-                (en as IDisposable)?.Dispose();
-            }
+            finally { (en as IDisposable)?.Dispose(); }
         }
         catch { }
+        return count;
     }
 
-    private void RepairServers()
+    private int RepairServers()
     {
-        if (!_readyToRun) return;
+        if (!_readyToRun) return 0;
+        var count = 0;
         try
         {
             var broken = _networkMap.GetAllBrokenServers() as IEnumerable;
-            if (broken == null) return;
+            if (broken == null) return 0;
             var en = broken.GetEnumerator();
             try
             {
                 while (en.MoveNext())
                 {
                     var srv = en.Current as Server;
-                    if (srv != null) srv.RepairDevice();
+                    if (srv != null) { srv.RepairDevice(); count++; }
                 }
             }
-            finally
-            {
-                (en as IDisposable)?.Dispose();
-            }
+            finally { (en as IDisposable)?.Dispose(); }
         }
         catch { }
+        return count;
     }
 
-    private void HandleSwitchesEol()
+    private int HandleSwitchesEol()
     {
-        if (!_readyToRun) return;
+        if (!_readyToRun) return 0;
+        var count = 0;
         try
         {
             var switches = _networkMap.switches as IEnumerable;
-            if (switches == null) return;
+            if (switches == null) return 0;
             var en = switches.GetEnumerator();
             try
             {
@@ -183,27 +205,24 @@ public class GregModNoEOLMod : MelonMod
                 {
                     var entry = en.Current;
                     if (entry == null) continue;
-                    var swProp = entry.GetType().GetProperty("value");
-                    var sw = swProp?.GetValue(entry) as NetworkSwitch;
-                    if (sw != null)
-                        sw.eolTime = GetDefaultEol(true, sw.switchType);
+                    var sw = entry.GetType().GetProperty("value")?.GetValue(entry) as NetworkSwitch;
+                    if (sw != null) { sw.eolTime = GetDefaultEol(true, sw.switchType); count++; }
                 }
             }
-            finally
-            {
-                (en as IDisposable)?.Dispose();
-            }
+            finally { (en as IDisposable)?.Dispose(); }
         }
         catch { }
+        return count;
     }
 
-    private void HandleServersEol()
+    private int HandleServersEol()
     {
-        if (!_readyToRun) return;
+        if (!_readyToRun) return 0;
+        var count = 0;
         try
         {
             var servers = _networkMap.servers as IEnumerable;
-            if (servers == null) return;
+            if (servers == null) return 0;
             var en = servers.GetEnumerator();
             try
             {
@@ -211,17 +230,13 @@ public class GregModNoEOLMod : MelonMod
                 {
                     var entry = en.Current;
                     if (entry == null) continue;
-                    var srvProp = entry.GetType().GetProperty("value");
-                    var srv = srvProp?.GetValue(entry) as Server;
-                    if (srv != null)
-                        srv.eolTime = GetDefaultEol(false, srv.serverType);
+                    var srv = entry.GetType().GetProperty("value")?.GetValue(entry) as Server;
+                    if (srv != null) { srv.eolTime = GetDefaultEol(false, srv.serverType); count++; }
                 }
             }
-            finally
-            {
-                (en as IDisposable)?.Dispose();
-            }
+            finally { (en as IDisposable)?.Dispose(); }
         }
         catch { }
+        return count;
     }
 }
