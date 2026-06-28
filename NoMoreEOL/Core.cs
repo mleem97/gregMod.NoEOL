@@ -5,7 +5,7 @@ using MelonLoader;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.7.0", "TeamGreg Modding (Neox & mleem97)")]
+[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.8.0", "TeamGreg Modding (Neox & mleem97)")]
 [assembly: MelonGame()]
 
 namespace GregModNoEOL;
@@ -30,6 +30,13 @@ public class GregModNoEOLMod : MelonMod
     private MainGameManager _gameManager;
     private int _frameCount;
 
+    // Rising-edge Escape detection (wasPressedThisFrame can be stripped by Harmony)
+    private bool _prevEscapeIsPressed;
+
+    // Double-press Escape: first press closes overlay, second press opens pause menu
+    private static float _overlayEscapeCloseTime;
+    private const float EscapeDoublePressWindow = 0.6f;
+
     public override void OnInitializeMelon()
     {
         ModReleaseLog.Bootstrap();
@@ -50,14 +57,37 @@ public class GregModNoEOLMod : MelonMod
         ModReleaseLog.ConfigEvent($"AutoRepairServers = {_prefAutoRepairServers.Value}");
         ModReleaseLog.ConfigEvent($"HideWarningTriangles = {_prefHideWarningTriangles.Value}");
 
-        LoggerInstance.Msg("gregMod.NoEOL v1.7.0 loaded. Press F5 for configuration.");
-        ModReleaseLog.Info("gregMod.NoEOL v1.7.0 initialized successfully");
+        LoggerInstance.Msg("gregMod.NoEOL v1.8.0 loaded. Press F5 for configuration.");
+        ModReleaseLog.Info("gregMod.NoEOL v1.8.0 initialized successfully");
         ModReleaseLog.Info($"Release log: {ModReleaseLog.LogPath}");
     }
 
     public override void OnUpdate()
     {
         HandleInput();
+
+        // Keep input suppression active for a short window after overlay closes via Escape
+        // so the game does not see the same Escape press and open the pause menu.
+        if (!NoEolOverlay.IsVisible && IsInEscapeCooldown())
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            if (!GameInputSuppression.IsActive)
+                GameInputSuppression.SetSuppressed(true);
+        }
+        else if (!NoEolOverlay.IsVisible && GameInputSuppression.IsActive)
+        {
+            GameInputSuppression.SetSuppressed(false);
+        }
+
+        // Keep cursor + input suppression in sync every frame while overlay is open
+        if (NoEolOverlay.IsVisible)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            if (!GameInputSuppression.IsActive)
+                GameInputSuppression.SetSuppressed(true);
+        }
 
         if (_readyToRun)
         {
@@ -128,14 +158,89 @@ public class GregModNoEOLMod : MelonMod
         var kb = Keyboard.current;
         if (kb == null) return;
 
-        if (kb.f5Key.wasPressedThisFrame)
+        // Do not open overlay while pause menu is active
+        if (!NoEolOverlay.IsVisible && IsPauseMenuActive())
+            return;
+
+        if (!NoEolOverlay.IsVisible)
         {
-            NoEolOverlay.IsVisible = !NoEolOverlay.IsVisible;
-            if (NoEolOverlay.IsVisible)
-                ModReleaseLog.ConfigEvent("Overlay opened");
-            else
-                ModReleaseLog.ConfigEvent("Overlay closed");
+            // F5 opens overlay (only when not already open)
+            if (kb.f5Key.wasPressedThisFrame)
+            {
+                NoEolOverlay.IsVisible = true;
+                _prevEscapeIsPressed = false; // reset latch
+                ModReleaseLog.ConfigEvent("Overlay opened (F5)");
+            }
+            return;
         }
+
+        // Rising-edge Escape detection (wasPressedThisFrame can be stripped by Harmony)
+        var escapeDown = kb.escapeKey.isPressed;
+        var escapeThisFrame = escapeDown && !_prevEscapeIsPressed;
+        _prevEscapeIsPressed = escapeDown;
+
+        if (escapeThisFrame)
+        {
+            NoEolOverlay.IsVisible = false;
+            _overlayEscapeCloseTime = Time.unscaledTime;
+            ModReleaseLog.ConfigEvent("Overlay closed (Escape)");
+        }
+    }
+
+    /// <summary>
+    /// Returns true if a game pause/settings menu canvas is currently active.
+    /// Used to prevent NoEOL overlay from opening on top of the pause menu.
+    /// </summary>
+    internal static bool IsPauseMenuActive()
+    {
+        try
+        {
+            var all = Resources.FindObjectsOfTypeAll<Canvas>();
+            if (all == null) return false;
+            foreach (var c in all)
+            {
+                if (c == null || !c.isActiveAndEnabled) continue;
+                var go = c.gameObject;
+                if (go == null) continue;
+                if (!go.scene.IsValid() || !go.scene.isLoaded) continue;
+                if (c.renderMode != RenderMode.ScreenSpaceOverlay) continue;
+
+                var n = go.name ?? "";
+                if (n.IndexOf("Pause", StringComparison.OrdinalIgnoreCase) >= 0
+                    || n.IndexOf("PauseMenu", StringComparison.OrdinalIgnoreCase) >= 0
+                    || n.IndexOf("EscapeMenu", StringComparison.OrdinalIgnoreCase) >= 0
+                    || n.IndexOf("InGameMenu", StringComparison.OrdinalIgnoreCase) >= 0
+                    || n.IndexOf("SystemMenu", StringComparison.OrdinalIgnoreCase) >= 0
+                    || n.IndexOf("OptionsMenu", StringComparison.OrdinalIgnoreCase) >= 0
+                    || n.IndexOf("SettingsMenu", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return true;
+                }
+            }
+        }
+        catch { }
+        return false;
+    }
+
+    /// <summary>
+    /// Should the game's Escape handler skip this press?
+    /// Returns true if NoEOL just closed within the double-press window.
+    /// First Escape = close overlay (consumed). Second Escape = open pause menu.
+    /// </summary>
+    internal static bool ShouldConsumeEscape()
+    {
+        if (Time.unscaledTime - _overlayEscapeCloseTime < EscapeDoublePressWindow)
+        {
+            _overlayEscapeCloseTime = 0f; // consume once, next Escape goes through
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>Returns true if the escape cooldown is still active (overlay just closed via Escape).</summary>
+    private static bool IsInEscapeCooldown()
+    {
+        return _overlayEscapeCloseTime > 0f && Time.unscaledTime - _overlayEscapeCloseTime < EscapeDoublePressWindow;
     }
 
     private int GetDefaultEol(bool isSwitch, int type)

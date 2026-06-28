@@ -81,6 +81,11 @@ internal static class NoEolOverlay
                         WindowW, WindowH);
                     _firstOpen = false;
                 }
+                GameInputSuppression.SetSuppressed(true);
+            }
+            else
+            {
+                GameInputSuppression.SetSuppressed(false);
             }
         }
     }
@@ -130,7 +135,10 @@ internal static class NoEolOverlay
 
         var closeBtnRect = new Rect(r.width - 40, 10, 28, 28);
         if (GUI.Button(closeBtnRect, "✕", _stMutedBtn))
+        {
             _isVisible = false;
+            GameInputSuppression.SetSuppressed(false);
+        }
 
         DrawBorder(new Rect(0, 0, r.width, r.height), _texBorder);
 
@@ -175,7 +183,10 @@ internal static class NoEolOverlay
         var btnW = 120f;
         var btnX = r.width - pad - btnW;
         if (GUI.Button(new Rect(btnX, contentY, btnW, 32), "Close", _stMutedBtn))
+        {
             _isVisible = false;
+            GameInputSuppression.SetSuppressed(false);
+        }
 
         GUI.DragWindow(new Rect(0, 0, r.width, titleBarH));
     }
