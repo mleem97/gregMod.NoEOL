@@ -1,11 +1,11 @@
 # Source layout
 
-All source lives under `NoMoreEOL/` with root namespace **`GregModNoEOL`**. No sub-namespaces.
+All source lives under `src/NoMoreEOL/` with root namespace **`GregModNoEOL`**. No sub-namespaces.
 
 ## Tree
 
 ```
-NoMoreEOL/
+src/NoMoreEOL/
 ├── Core.cs                    # MelonLoader entry point, EOL handling, device repair
 ├── NoEolOverlay.cs            # F5 configuration overlay (IPAM-style dark UI)
 ├── EolHider.cs                # EOL warning triangle hiding (Harmony patch by tindolt)

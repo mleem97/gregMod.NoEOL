@@ -101,7 +101,7 @@ bin/Release/net6.0/gregMod.NoEOL.dll
 
 ```
 gregMod.NoEOL/
-├── NoMoreEOL/                  # Source code
+├── src/NoMoreEOL/              # Source code
 │   ├── Core.cs                 # MelonLoader entry point, EOL handling, device repair
 │   ├── NoEolOverlay.cs         # F5 configuration overlay (IPAM-style UI)
 │   ├── EolHider.cs             # EOL warning triangle hiding (Harmony patch)
