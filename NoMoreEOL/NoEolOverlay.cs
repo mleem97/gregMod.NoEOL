@@ -1,5 +1,6 @@
 using MelonLoader;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace GregModNoEOL;
 
@@ -61,7 +62,10 @@ internal static class NoEolOverlay
     private static readonly Color ColTealAccent = new(80f / 255f, 220f / 255f, 210f / 255f, 1f);
 
     private const float WindowW = 420f;
-    private const float WindowH = 450f;
+    private const float WindowH = 560f;
+
+    private static int _hardwareClickFrame = -1;
+    private static bool _hardwareClickHandled;
 
     public static bool IsVisible
     {
@@ -119,6 +123,15 @@ internal static class NoEolOverlay
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        // Unity 6 / Input System can prevent IMGUI from receiving mouse events.
+        // Process the hardware pointer before GUI.Window as a reliable fallback.
+        if (_hardwareClickFrame != Time.frameCount)
+        {
+            _hardwareClickFrame = Time.frameCount;
+            _hardwareClickHandled = false;
+        }
+        HandleHardwareMouseClick();
+
         _windowRect = GUI.Window(9002, _windowRect, (GUI.WindowFunction)DrawWindow, "", _stBackdrop);
     }
 
@@ -134,7 +147,7 @@ internal static class NoEolOverlay
         GUI.Label(new Rect(16, 12, r.width - 80, 28), "NoEOL . Data Center", _stWindowTitle);
 
         var closeBtnRect = new Rect(r.width - 40, 10, 28, 28);
-        if (GUI.Button(closeBtnRect, "✕", _stMutedBtn))
+        if (!_hardwareClickHandled && GUI.Button(closeBtnRect, "✕", _stMutedBtn))
         {
             _isVisible = false;
             GameInputSuppression.SetSuppressed(false);
@@ -182,7 +195,7 @@ internal static class NoEolOverlay
 
         var btnW = 120f;
         var btnX = r.width - pad - btnW;
-        if (GUI.Button(new Rect(btnX, contentY, btnW, 32), "Close", _stMutedBtn))
+        if (!_hardwareClickHandled && GUI.Button(new Rect(btnX, contentY, btnW, 32), "Close", _stMutedBtn))
         {
             _isVisible = false;
             GameInputSuppression.SetSuppressed(false);
@@ -205,12 +218,9 @@ internal static class NoEolOverlay
         var toggleH = 26f;
         var toggleRect = new Rect(x + w - toggleW - 12, y + (cardH - toggleH) * 0.5f, toggleW, toggleH);
 
-        if (GUI.Button(toggleRect, toggleText, toggleStyle))
+        if (!_hardwareClickHandled && GUI.Button(toggleRect, toggleText, toggleStyle))
         {
-            pref.Value = !pref.Value;
-            MelonPreferences.Save();
-            ModReleaseLog.ConfigEvent($"{pref.DisplayName} = {pref.Value}");
-            onChanged?.Invoke(pref.Value);
+            TogglePreference(pref, onChanged);
         }
 
         var textX = x + 14;
@@ -219,6 +229,78 @@ internal static class NoEolOverlay
         GUI.Label(new Rect(textX, y + 30, textW, 28), description, _stMuted);
 
         return y + cardH + 8f;
+    }
+
+    private static void HandleHardwareMouseClick()
+    {
+        var mouse = Mouse.current;
+        if (mouse == null || !mouse.leftButton.wasPressedThisFrame)
+            return;
+
+        if (_hardwareClickHandled)
+            return;
+
+        var screen = mouse.position.ReadValue();
+        screen.y = Screen.height - screen.y;
+        var local = new Vector2(screen.x - _windowRect.x, screen.y - _windowRect.y);
+
+        var closeTop = new Rect(_windowRect.width - 40f, 10f, 28f, 28f);
+        if (closeTop.Contains(local))
+        {
+            IsVisible = false;
+            _hardwareClickHandled = true;
+            return;
+        }
+
+        const float titleBarH = 52f;
+        const float pad = 20f;
+        const float cardH = 62f;
+        const float cardGap = 8f;
+        const float toggleW = 52f;
+        const float toggleH = 26f;
+        var contentY = titleBarH + 8f + 30f + 28f;
+        var contentW = _windowRect.width - pad * 2f;
+
+        var prefs = new[]
+        {
+            (_prefDisableSwitchEol, (System.Action<bool>)null),
+            (_prefDisableServerEol, (System.Action<bool>)null),
+            (_prefAutoRepairSwitches, (System.Action<bool>)null),
+            (_prefAutoRepairServers, (System.Action<bool>)null),
+            (_prefHideWarningTriangles, (System.Action<bool>)(visible => EolHider.ApplyVisibility(visible)))
+        };
+
+        foreach (var (pref, onChanged) in prefs)
+        {
+            var toggleRect = new Rect(
+                pad + contentW - toggleW - 12f,
+                contentY + (cardH - toggleH) * 0.5f,
+                toggleW, toggleH);
+            if (toggleRect.Contains(local))
+            {
+                TogglePreference(pref, onChanged);
+                _hardwareClickHandled = true;
+                return;
+            }
+            contentY += cardH + cardGap;
+        }
+
+        contentY += 8f;
+        var closeBottom = new Rect(_windowRect.width - pad - 120f, contentY, 120f, 32f);
+        if (closeBottom.Contains(local))
+        {
+            IsVisible = false;
+            _hardwareClickHandled = true;
+        }
+    }
+
+    private static void TogglePreference(MelonPreferences_Entry<bool> pref, System.Action<bool> onChanged)
+    {
+        if (pref == null) return;
+        pref.Value = !pref.Value;
+        MelonPreferences.Save();
+        ModReleaseLog.ConfigEvent($"{pref.DisplayName} = {pref.Value}");
+        onChanged?.Invoke(pref.Value);
     }
 
     private static void DrawBorder(Rect r, Texture2D tex)

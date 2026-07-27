@@ -57,8 +57,8 @@ public class GregModNoEOLMod : MelonMod
         ModReleaseLog.ConfigEvent($"AutoRepairServers = {_prefAutoRepairServers.Value}");
         ModReleaseLog.ConfigEvent($"HideWarningTriangles = {_prefHideWarningTriangles.Value}");
 
-        LoggerInstance.Msg("gregMod.NoEOL v1.8.0 loaded. Press F5 for configuration.");
-        ModReleaseLog.Info("gregMod.NoEOL v1.8.0 initialized successfully");
+        LoggerInstance.Msg("gregMod.NoEOL v1.8.1 loaded. Press F5 for configuration.");
+        ModReleaseLog.Info("gregMod.NoEOL v1.8.1 initialized successfully");
         ModReleaseLog.Info($"Release log: {ModReleaseLog.LogPath}");
     }
 
