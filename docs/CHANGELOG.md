@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.8.3
+
+- Corrected the release/version metadata after the v1.8.2 mismatch
+- Standardized documentation and current game-version metadata
+
 ## v1.7.0
 
 - EolHider: hide EOL warning triangles on devices (by tindolt)
