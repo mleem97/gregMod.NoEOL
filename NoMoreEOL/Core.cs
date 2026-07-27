@@ -5,7 +5,7 @@ using MelonLoader;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.8.0", "TeamGreg Modding (Neox & mleem97)")]
+[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.8.1", "TeamGreg Modding (Neox & mleem97)")]
 [assembly: MelonGame()]
 
 namespace GregModNoEOL;
