@@ -10,6 +10,28 @@ using UnityEngine.InputSystem;
 
 namespace GregModNoEOL;
 
+// Erkennt zur Laufzeit, ob gregCore vorhanden ist (reiner Typname-Lookup).
+// Methoden, die gregCore-Typen beruehren, duerfen NUR aufgerufen werden,
+// wenn HasCore true ist (sonst JIT-TypeLoad bei fehlender DLL).
+internal static class NoEolGregHost
+{
+    private const string ProbeType = "gregCore.UI.GregNotificationManager, gregCore";
+    private static bool? _hasCore;
+
+    public static bool HasCore
+    {
+        get
+        {
+            if (_hasCore == null)
+            {
+                try { _hasCore = Type.GetType(ProbeType) != null; }
+                catch { _hasCore = false; }
+            }
+            return _hasCore.Value;
+        }
+    }
+}
+
 public class GregModNoEOLMod : MelonMod
 {
     private const int DefaultEOL = 14401;
@@ -22,10 +44,17 @@ public class GregModNoEOLMod : MelonMod
     private static MelonPreferences_Entry<bool> _prefAutoRepairSwitches;
     private static MelonPreferences_Entry<bool> _prefAutoRepairServers;
     private static MelonPreferences_Entry<bool> _prefHideWarningTriangles;
+    private static MelonPreferences_Entry<string> _prefToggleKey;
+    private static Key _toggleKey = Key.F5;
 
     private readonly System.Collections.Generic.Dictionary<int, int> _switchTypeDefaultEol = new();
     private readonly System.Collections.Generic.Dictionary<int, int> _serverTypeDefaultEol = new();
     private bool _readyToRun;
+    // Maintenance does not need frame-rate cadence.  The old per-frame scans
+    // enumerate every switch and server through IL2CPP and were a significant
+    // source of CPU/interop overhead while playing.
+    private float _nextMaintenanceAt;
+    private const float MaintenanceIntervalSeconds = 0.25f;
     private NetworkMap _networkMap;
     private MainGameManager _gameManager;
     private int _frameCount;
@@ -47,6 +76,19 @@ public class GregModNoEOLMod : MelonMod
         _prefAutoRepairSwitches = _prefs.CreateEntry("AutoRepairSwitches", true, "Auto Repair Broken Switches");
         _prefAutoRepairServers = _prefs.CreateEntry("AutoRepairServers", true, "Auto Repair Broken Servers");
         _prefHideWarningTriangles = _prefs.CreateEntry("HideWarningTriangles", false, "Hide EOL Warning Triangles");
+        _prefToggleKey = _prefs.CreateEntry("ToggleKey", "F5", "Hotkey to open the EOL overlay");
+        try
+        {
+            if (Enum.TryParse<Key>(_prefToggleKey.Value, true, out var k) && k != Key.None)
+                _toggleKey = k;
+            else
+                MelonLogger.Warning($"[NoEOL] Unknown ToggleKey '{_prefToggleKey.Value}', defaulting to F5.");
+        }
+        catch { }
+        if (NoEolGregHost.HasCore)
+        {
+            try { RegisterCoreExtras(); } catch { }
+        }
 
         NoEolOverlay.Init(_prefDisableSwitchEol, _prefDisableServerEol, _prefAutoRepairSwitches, _prefAutoRepairServers, _prefHideWarningTriangles);
         EolHider.Init(_prefHideWarningTriangles);
@@ -57,9 +99,30 @@ public class GregModNoEOLMod : MelonMod
         ModReleaseLog.ConfigEvent($"AutoRepairServers = {_prefAutoRepairServers.Value}");
         ModReleaseLog.ConfigEvent($"HideWarningTriangles = {_prefHideWarningTriangles.Value}");
 
-        LoggerInstance.Msg("gregMod.NoEOL v1.8.1 loaded. Press F5 for configuration.");
+        LoggerInstance.Msg($"gregMod.NoEOL v1.8.3 loaded. Press {_toggleKey} for configuration.");
         ModReleaseLog.Info("gregMod.NoEOL v1.8.1 initialized successfully");
         ModReleaseLog.Info($"Release log: {ModReleaseLog.LogPath}");
+    }
+
+    // Mod-Vertrag + Tasten-HUD + Oeffner fuers F1-Hub. Nur mit gregCore
+    // aufrufen (eigene Methode wegen JIT-Trennung ohne gregCore-DLL).
+    private void RegisterCoreExtras()
+    {
+        try
+        {
+            gregCore.Core.Mods.GregModRegistry.Register(
+                "gregMod.NoEOL", "NoEOL", "1.8.3",
+                new string[] { "noeol" });
+            gregCore.UI.GregHudRegistry.Register("noeol", _toggleKey.ToString(), "EOL");
+            gregCore.UI.GregMenuRegistry.RegisterOpener("noeol", () =>
+            {
+                try { NoEolOverlay.IsVisible = !NoEolOverlay.IsVisible; } catch { }
+            });
+        }
+        catch (System.Exception ex)
+        {
+            MelonLogger.Warning("[NoEOL] Hub-Registrierung fehlgeschlagen: " + ex.GetBaseException().Message);
+        }
     }
 
     public override void OnUpdate()
@@ -92,6 +155,10 @@ public class GregModNoEOLMod : MelonMod
         if (_readyToRun)
         {
             _frameCount++;
+            if (Time.unscaledTime < _nextMaintenanceAt)
+                return;
+            _nextMaintenanceAt = Time.unscaledTime + MaintenanceIntervalSeconds;
+
             var repairedSw = 0;
             var repairedSrv = 0;
             var resetSw = 0;
@@ -143,6 +210,7 @@ public class GregModNoEOLMod : MelonMod
         if (buildIndex == MainMenuSceneBuildIndex)
         {
             _readyToRun = false;
+            _nextMaintenanceAt = 0f;
             _gameManager = null;
             _networkMap = null;
             _switchTypeDefaultEol.Clear();
@@ -164,13 +232,18 @@ public class GregModNoEOLMod : MelonMod
 
         if (!NoEolOverlay.IsVisible)
         {
-            // F5 opens overlay (only when not already open)
-            if (kb.f5Key.wasPressedThisFrame)
+            // Toggle-Key oeffnet das Overlay (nur wenn noch nicht offen)
+            try
             {
-                NoEolOverlay.IsVisible = true;
-                _prevEscapeIsPressed = false; // reset latch
-                ModReleaseLog.ConfigEvent("Overlay opened (F5)");
+                var ctrl = kb[_toggleKey];
+                if (ctrl != null && ctrl.wasPressedThisFrame)
+                {
+                    NoEolOverlay.IsVisible = true;
+                    _prevEscapeIsPressed = false; // reset latch
+                    ModReleaseLog.ConfigEvent($"Overlay opened ({_toggleKey})");
+                }
             }
+            catch { }
             return;
         }
 
