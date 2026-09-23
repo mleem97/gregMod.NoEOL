@@ -48,8 +48,8 @@ internal static class NoEolOverlay
     private static readonly Color ColSidebar = new(24f / 255f, 30f / 255f, 40f / 255f, 1f);
     private static readonly Color ColCard = new(30f / 255f, 36f / 255f, 46f / 255f, 1f);
     private static readonly Color ColBorder = new(40f / 255f, 48f / 255f, 60f / 255f, 1f);
-    private static readonly Color ColPrimaryBtn = new(0f / 255f, 133f / 255f, 120f / 255f, 1f);
-    private static readonly Color ColPrimaryBtnHover = new(0f / 255f, 152f / 255f, 136f / 255f, 1f);
+    private static readonly Color ColPrimaryBtn = new(10f / 255f, 162f / 255f, 192f / 255f, 1f);
+    private static readonly Color ColPrimaryBtnHover = new(135f / 255f, 206f / 255f, 235f / 255f, 1f);
     private static readonly Color ColMutedBtn = new(48f / 255f, 55f / 255f, 68f / 255f, 1f);
     private static readonly Color ColMutedBtnHover = new(58f / 255f, 66f / 255f, 82f / 255f, 1f);
     private static readonly Color ColToggleOn = new(0f / 255f, 180f / 255f, 160f / 255f, 1f);
@@ -58,7 +58,7 @@ internal static class NoEolOverlay
     private static readonly Color ColSection = new(226f / 255f, 232f / 255f, 240f / 255f, 1f);
     private static readonly Color ColFormLabel = new(200f / 255f, 208f / 255f, 218f / 255f, 1f);
     private static readonly Color ColMuted = new(154f / 255f, 164f / 255f, 178f / 255f, 1f);
-    private static readonly Color ColHint = new(130f / 255f, 170f / 255f, 255f / 255f, 1f);
+    private static readonly Color ColHint = new(135f / 255f, 206f / 255f, 235f / 255f, 1f);
     private static readonly Color ColTealAccent = new(80f / 255f, 220f / 255f, 210f / 255f, 1f);
 
     private const float WindowW = 420f;
@@ -74,6 +74,8 @@ internal static class NoEolOverlay
         {
             if (_isVisible == value) return;
             _isVisible = value;
+
+            try { GregModNoEOLMod.ReportMenuOpen(_isVisible); } catch { /* best-effort */ }
 
             if (_isVisible)
             {
@@ -391,8 +393,8 @@ internal static class NoEolOverlay
             fontSize = 13,
             fontStyle = FontStyle.Bold,
             alignment = TextAnchor.MiddleCenter,
-            normal = { textColor = Color.white, background = _texPrimaryBtn },
-            hover = { background = _texPrimaryBtnHover }
+            normal = { textColor = new Color(0.02f, 0.07f, 0.12f), background = _texPrimaryBtn },
+            hover = { textColor = new Color(0.02f, 0.07f, 0.12f), background = _texPrimaryBtnHover }
         };
 
         _stMutedBtn = new GUIStyle

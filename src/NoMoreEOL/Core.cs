@@ -118,11 +118,28 @@ public class GregModNoEOLMod : MelonMod
             {
                 try { NoEolOverlay.IsVisible = !NoEolOverlay.IsVisible; } catch { }
             });
+            gregCore.UI.GregMenuRegistry.RegisterCloser("noeol", () =>
+            {
+                try { NoEolOverlay.IsVisible = false; } catch { }
+            });
         }
         catch (System.Exception ex)
         {
             MelonLogger.Warning("[NoEOL] Hub-Registrierung fehlgeschlagen: " + ex.GetBaseException().Message);
         }
+    }
+
+    // Meldet den Overlay-Status ans F1-Hub. Wird aus dem IsVisible-Setter
+    // aufgerufen (alle Wege: Hotkey, Hub, Escape). Ohne gregCore No-Op.
+    internal static void ReportMenuOpen(bool open)
+    {
+        try { if (NoEolGregHost.HasCore) CoreSetOpen(open); } catch { /* best-effort */ }
+    }
+
+    // Separate Methode (JIT-Trennung): beruehrt gregCore-Typen.
+    private static void CoreSetOpen(bool open)
+    {
+        try { gregCore.UI.GregMenuRegistry.SetOpen("noeol", open); } catch { /* best-effort */ }
     }
 
     public override void OnUpdate()
