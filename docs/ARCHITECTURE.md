@@ -1,16 +1,16 @@
-# Architektur — gregMod.NoEOL
+# Architecture — gregMod.NoEOL
 
 > gregMod.NoEOL** prevents servers and switches from reaching end-of-life and automatically repairs broken devices. It keeps your network running without constant
 
-## Komponenten
+## Components
 
-- **Einstieg:** siehe [QUICKSTART.md](../QUICKSTART.md).
-- **Skripte:** [`scripts/`](../scripts/) — Automatisierung rund um Build/Test/Release.
-- **Tests:** [`tests/`](../tests/) — Testfälle und Fixtures.
-- **Referenzen:** [`references/`](../references/) — externe Referenzen und Material.
-- **Beispiele:** [`examples/`](../examples/) — lauffähige Minimalbeispiele.
+- **Getting started:** see [QUICKSTART.md](../QUICKSTART.md).
+- **Scripts:** [`scripts/`](../scripts/) — automation around build/test/release.
+- **Tests:** [`tests/`](../tests/) — test cases and fixtures.
+- **References:** [`references/`](../references/) — external references and material.
+- **Examples:** [`examples/`](../examples/) — runnable minimal examples.
 
-## Datenflüsse
+## Data flows
 
-Projektspezifisch dokumentieren (Komponente A → B, Formate, Schnittstellen).
-Änderungen hier + [`CHANGELOG.md`](../CHANGELOG.md) (Unreleased) nachtragen.
+Document project specifics (component A → B, formats, interfaces).
+Record changes here + in [`CHANGELOG.md`](../CHANGELOG.md) (Unreleased).

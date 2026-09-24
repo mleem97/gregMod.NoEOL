@@ -1,20 +1,20 @@
 # Security Policy — gregMod.NoEOL
 
-## Melden
+## Reporting
 
-Sicherheitslücken bitte **nicht** als öffentliches Issue melden, sondern per E-Mail an den Maintainer
-([mleem97](https://github.com/mleem97)) mit Betreff `[SECURITY] gregMod.NoEOL` und folgenden Angaben:
+Please do **not** report vulnerabilities as a public issue; email the maintainer instead
+([mleem97](https://github.com/mleem97)) with subject `[SECURITY] gregMod.NoEOL` and include the following details:
 
-- betroffene Version (`VERSION` / Commit),
-- Schritte zur Reproduktion,
-- mögliche Auswirkungen.
+- affected version (`VERSION` / commit),
+- steps to reproduce,
+- possible impact.
 
-Antwortziel: Bestätigung innerhalb von 72 Stunden. Details werden erst nach einem Fix veröffentlicht
+Response goal: confirmation within 72 hours. Details are only published after a fix
 (Coordinated Disclosure).
 
-## Unterstützte Versionen
+## Supported versions
 
 | Version | Support |
 |---|---|
-| Letztes Release (`VERSION`) | ✅ |
-| Ältere | ❌ (nur Best-Effort) |
+| Latest release (`VERSION`) | ✅ |
+| Older | ❌ (best effort only) |
