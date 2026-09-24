@@ -4,6 +4,7 @@ using Il2Cpp;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.InputSystem;
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("ModCoverage.Tests")]
 
 [assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "2.0.1", "TeamGreg Modding (Neox & mleem97)")]
 [assembly: MelonGame()]
