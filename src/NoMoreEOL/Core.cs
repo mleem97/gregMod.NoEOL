@@ -5,14 +5,15 @@ using MelonLoader;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "1.8.3", "TeamGreg Modding (Neox & mleem97)")]
+[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "2.0.0", "TeamGreg Modding (Neox & mleem97)")]
 [assembly: MelonGame()]
 
 namespace GregModNoEOL;
 
-// Erkennt zur Laufzeit, ob gregCore vorhanden ist (reiner Typname-Lookup).
-// Methoden, die gregCore-Typen beruehren, duerfen NUR aufgerufen werden,
-// wenn HasCore true ist (sonst JIT-TypeLoad bei fehlender DLL).
+// Detects at runtime whether gregCore is present (pure type-name lookup).
+// Methods touching gregCore types must ONLY be called when HasCore is true
+// (otherwise JIT TypeLoad without DLL). The mod stays fully usable without
+// gregCore (standalone mode: no F1-hub extras, no toast).
 internal static class NoEolGregHost
 {
     private const string ProbeType = "gregCore.UI.GregNotificationManager, gregCore";
@@ -68,6 +69,10 @@ public class GregModNoEOLMod : MelonMod
 
     public override void OnInitializeMelon()
     {
+        // Soft dependency on gregCore: standalone mode without hub extras.
+        if (!NoEolGregHost.HasCore)
+            LoggerInstance.Warning("[NoEOL] gregCore not found — standalone mode (F1-hub extras disabled). Put gregCore.dll in Mods for hub integration.");
+
         ModReleaseLog.Bootstrap();
 
         _prefs = MelonPreferences.CreateCategory("gregMod_NoEOL", "gregMod.NoEOL");
@@ -99,47 +104,42 @@ public class GregModNoEOLMod : MelonMod
         ModReleaseLog.ConfigEvent($"AutoRepairServers = {_prefAutoRepairServers.Value}");
         ModReleaseLog.ConfigEvent($"HideWarningTriangles = {_prefHideWarningTriangles.Value}");
 
-        LoggerInstance.Msg($"gregMod.NoEOL v1.8.3 loaded. Press {_toggleKey} for configuration.");
-        ModReleaseLog.Info("gregMod.NoEOL v1.8.1 initialized successfully");
+        LoggerInstance.Msg($"gregMod.NoEOL v2.0.0 loaded. Press {_toggleKey} for configuration.");
+        ModReleaseLog.Info("gregMod.NoEOL v2.0.0 initialized successfully");
         ModReleaseLog.Info($"Release log: {ModReleaseLog.LogPath}");
     }
 
-    // Mod-Vertrag + Tasten-HUD + Oeffner fuers F1-Hub. Nur mit gregCore
-    // aufrufen (eigene Methode wegen JIT-Trennung ohne gregCore-DLL).
+    // Mod contract + key HUD + opener for F1 hub. Only call with gregCore
+    // (own method for JIT separation without the gregCore DLL).
     private void RegisterCoreExtras()
     {
         try
         {
             gregCore.Core.Mods.GregModRegistry.Register(
-                "gregMod.NoEOL", "NoEOL", "1.8.3",
+                "gregMod.NoEOL", "NoEOL", "2.0.0",
                 new string[] { "noeol" });
             gregCore.UI.GregHudRegistry.Register("noeol", _toggleKey.ToString(), "EOL");
-            gregCore.UI.GregMenuRegistry.RegisterOpener("noeol", () =>
-            {
-                try { NoEolOverlay.IsVisible = !NoEolOverlay.IsVisible; } catch { }
-            });
-            gregCore.UI.GregMenuRegistry.RegisterCloser("noeol", () =>
-            {
-                try { NoEolOverlay.IsVisible = false; } catch { }
-            });
+            gregCore.UI.GregMenuBinding.BindToggle("noeol",
+                () => { try { NoEolOverlay.IsVisible = !NoEolOverlay.IsVisible; } catch { } },
+                () => NoEolOverlay.IsVisible);
         }
         catch (System.Exception ex)
         {
-            MelonLogger.Warning("[NoEOL] Hub-Registrierung fehlgeschlagen: " + ex.GetBaseException().Message);
+            MelonLogger.Warning("[NoEOL] Hub registration failed: " + ex.GetBaseException().Message);
         }
     }
 
-    // Meldet den Overlay-Status ans F1-Hub. Wird aus dem IsVisible-Setter
-    // aufgerufen (alle Wege: Hotkey, Hub, Escape). Ohne gregCore No-Op.
+    // Reports overlay state to F1 hub. Called from IsVisible setter
+    // (all paths: hotkey, hub, escape). No-op without gregCore.
     internal static void ReportMenuOpen(bool open)
     {
         try { if (NoEolGregHost.HasCore) CoreSetOpen(open); } catch { /* best-effort */ }
     }
 
-    // Separate Methode (JIT-Trennung): beruehrt gregCore-Typen.
+    // Separate method (JIT separation): touches gregCore types.
     private static void CoreSetOpen(bool open)
     {
-        try { gregCore.UI.GregMenuRegistry.SetOpen("noeol", open); } catch { /* best-effort */ }
+        try { gregCore.UI.GregMenuBinding.Report("noeol", open); } catch { /* best-effort */ }
     }
 
     public override void OnUpdate()
@@ -249,7 +249,7 @@ public class GregModNoEOLMod : MelonMod
 
         if (!NoEolOverlay.IsVisible)
         {
-            // Toggle-Key oeffnet das Overlay (nur wenn noch nicht offen)
+            // Toggle key opens overlay (only if not open yet)
             try
             {
                 var ctrl = kb[_toggleKey];

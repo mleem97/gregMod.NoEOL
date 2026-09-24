@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using HarmonyLib;
 using Il2Cpp;
 using MelonLoader;
@@ -22,11 +21,37 @@ internal static class EolHider
 
         var harmony = new HarmonyLib.Harmony("com.gregmod.noeol.eolhider");
 
+        // Soft dependency: with gregCore use the shared patch helper,
+        // otherwise fall back to manual reflection (same target, no core).
+        if (NoEolGregHost.HasCore)
+            CorePatchInit(harmony);
+        else
+            ManualPatchInit(harmony);
+
+        _initialized = true;
+
+        if (!_prefEnabled.Value)
+            ApplyVisibility(false);
+
+        ModReleaseLog.Info($"[EolHider] Initialized, enabled={_prefEnabled.Value}");
+    }
+
+    // Separate method (JIT separation): touches gregCore types.
+    private static void CorePatchInit(HarmonyLib.Harmony harmony)
+    {
+        gregCore.Core.Mods.GregPatches.TryPatchPrefix(harmony, typeof(StaticUIElements),
+            "InstantiateErrorWarningSign", typeof(EolHider), nameof(SkipInstantiate), "NoEOL");
+    }
+
+    // Standalone fallback (no gregCore): manual prefix patch, same target.
+    private static void ManualPatchInit(HarmonyLib.Harmony harmony)
+    {
         var targetType = typeof(StaticUIElements);
-        var prefix = new HarmonyMethod(typeof(EolHider).GetMethod(nameof(SkipInstantiate), BindingFlags.Static | BindingFlags.NonPublic));
+        var prefix = new HarmonyLib.HarmonyMethod(typeof(EolHider).GetMethod(nameof(SkipInstantiate),
+            System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic));
 
         var m = targetType.GetMethod("InstantiateErrorWarningSign",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
 
         if (m != null)
         {
@@ -37,13 +62,6 @@ internal static class EolHider
         {
             ModReleaseLog.Warning("[EolHider] Could not find InstantiateErrorWarningSign");
         }
-
-        _initialized = true;
-
-        if (!_prefEnabled.Value)
-            ApplyVisibility(false);
-
-        ModReleaseLog.Info($"[EolHider] Initialized, enabled={_prefEnabled.Value}");
     }
 
     internal static void OnSceneLoaded()
