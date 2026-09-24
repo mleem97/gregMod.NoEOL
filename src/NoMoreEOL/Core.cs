@@ -5,7 +5,7 @@ using MelonLoader;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "2.0.0", "TeamGreg Modding (Neox & mleem97)")]
+[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "2.0.1", "TeamGreg Modding (Neox & mleem97)")]
 [assembly: MelonGame()]
 
 namespace GregModNoEOL;
@@ -104,8 +104,8 @@ public class GregModNoEOLMod : MelonMod
         ModReleaseLog.ConfigEvent($"AutoRepairServers = {_prefAutoRepairServers.Value}");
         ModReleaseLog.ConfigEvent($"HideWarningTriangles = {_prefHideWarningTriangles.Value}");
 
-        LoggerInstance.Msg($"gregMod.NoEOL v2.0.0 loaded. Press {_toggleKey} for configuration.");
-        ModReleaseLog.Info("gregMod.NoEOL v2.0.0 initialized successfully");
+        LoggerInstance.Msg($"gregMod.NoEOL v2.0.1 loaded. Press {_toggleKey} for configuration.");
+        ModReleaseLog.Info("gregMod.NoEOL v2.0.1 initialized successfully");
         ModReleaseLog.Info($"Release log: {ModReleaseLog.LogPath}");
     }
 
@@ -116,7 +116,7 @@ public class GregModNoEOLMod : MelonMod
         try
         {
             gregCore.Core.Mods.GregModRegistry.Register(
-                "gregMod.NoEOL", "NoEOL", "2.0.0",
+                "gregMod.NoEOL", "NoEOL", "2.0.1",
                 new string[] { "noeol" });
             gregCore.UI.GregHudRegistry.Register("noeol", _toggleKey.ToString(), "EOL");
             gregCore.UI.GregMenuBinding.BindToggle("noeol",

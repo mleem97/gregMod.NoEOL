@@ -2,6 +2,13 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/de/1.0.0/). Version: see [`VERSION`](VERSION).
 
+## [2.0.1] — 2026-09-24
+
+### Changed
+
+- EOL patch via GregPatches.TryPatchPrefix.
+- English strings throughout.
+
 ## [2.0.0] — 2026-09-24
 
 ### Changed
