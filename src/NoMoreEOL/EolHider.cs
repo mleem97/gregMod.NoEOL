@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using HarmonyLib;
 using Il2Cpp;
 using MelonLoader;
@@ -22,21 +21,8 @@ internal static class EolHider
 
         var harmony = new HarmonyLib.Harmony("com.gregmod.noeol.eolhider");
 
-        var targetType = typeof(StaticUIElements);
-        var prefix = new HarmonyMethod(typeof(EolHider).GetMethod(nameof(SkipInstantiate), BindingFlags.Static | BindingFlags.NonPublic));
-
-        var m = targetType.GetMethod("InstantiateErrorWarningSign",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-        if (m != null)
-        {
-            harmony.Patch(m, prefix);
-            ModReleaseLog.Info("[EolHider] Patched InstantiateErrorWarningSign");
-        }
-        else
-        {
-            ModReleaseLog.Warning("[EolHider] Could not find InstantiateErrorWarningSign");
-        }
+        gregCore.Core.Mods.GregPatches.TryPatchPrefix(harmony, typeof(StaticUIElements),
+            "InstantiateErrorWarningSign", typeof(EolHider), nameof(SkipInstantiate), "NoEOL");
 
         _initialized = true;
 
