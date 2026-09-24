@@ -114,14 +114,9 @@ public class GregModNoEOLMod : MelonMod
                 "gregMod.NoEOL", "NoEOL", "1.9.0",
                 new string[] { "noeol" });
             gregCore.UI.GregHudRegistry.Register("noeol", _toggleKey.ToString(), "EOL");
-            gregCore.UI.GregMenuRegistry.RegisterOpener("noeol", () =>
-            {
-                try { NoEolOverlay.IsVisible = !NoEolOverlay.IsVisible; } catch { }
-            });
-            gregCore.UI.GregMenuRegistry.RegisterCloser("noeol", () =>
-            {
-                try { NoEolOverlay.IsVisible = false; } catch { }
-            });
+            gregCore.UI.GregMenuBinding.BindToggle("noeol",
+                () => { try { NoEolOverlay.IsVisible = !NoEolOverlay.IsVisible; } catch { } },
+                () => NoEolOverlay.IsVisible);
         }
         catch (System.Exception ex)
         {
