@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("ModCoverage.Tests")]
 
-[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "2.0.1", "TeamGreg Modding (Neox & mleem97)")]
+[assembly: MelonInfo(typeof(GregModNoEOL.GregModNoEOLMod), "gregMod.NoEOL", "2.0.2", "TeamGreg Modding (Neox & mleem97)")]
 [assembly: MelonGame()]
 
 namespace GregModNoEOL;
@@ -117,7 +117,7 @@ public class GregModNoEOLMod : MelonMod
         try
         {
             gregCore.Core.Mods.GregModRegistry.Register(
-                "gregMod.NoEOL", "NoEOL", "2.0.1",
+                "gregMod.NoEOL", "NoEOL", "2.0.2",
                 new string[] { "noeol" });
             gregCore.UI.GregHudRegistry.Register("noeol", _toggleKey.ToString(), "EOL");
             gregCore.UI.GregMenuBinding.BindToggle("noeol",

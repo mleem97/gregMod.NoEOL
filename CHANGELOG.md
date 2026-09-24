@@ -2,6 +2,12 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/de/1.0.0/). Version: see [`VERSION`](VERSION).
 
+## [2.0.2] — 2026-09-24
+
+### Changed
+
+- Standalone mode restored (probe/guards/theme back; EOL patch stays on GregPatches).
+
 ## [2.0.1] — 2026-09-24
 
 ### Changed
